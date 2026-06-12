@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Agendamentos CSM</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Nunito,sans-serif;background:#f0f2f7;min-height:100vh}
+.hd{display:none}
+/* Header */
+.hdr{background:#22367b;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.hdr img{height:36px;object-fit:contain}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.badge{background:rgba(255,202,38,.15);border:1px solid rgba(255,202,38,.4);color:#ffca26;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+.btn-sair{padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+/* Password gate */
+#pwd-gate{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.pwd-box{background:#fff;border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(34,54,123,.12);text-align:center;max-width:360px;width:100%}
+.pwd-box img{height:40px;margin-bottom:24px}
+.pwd-title{font-size:20px;font-weight:800;color:#22367b;margin-bottom:6px}
+.pwd-sub{font-size:13px;color:#6b7280;margin-bottom:24px}
+.pwd-input{width:100%;padding:11px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none;text-align:center;letter-spacing:2px;margin-bottom:12px}
+.pwd-input.err{border-color:#dc2626}
+.pwd-errmsg{color:#dc2626;font-size:13px;margin-bottom:10px}
+/* Hero */
+.hero{background:linear-gradient(135deg,#22367b 0%,#1a2d6b 100%);padding:40px 32px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:320px;height:320px;border-radius:50%;background:rgba(255,202,38,.07);top:-80px;right:-80px}
+.hero-tag{display:inline-block;background:rgba(255,202,38,.15);border:1px solid rgba(255,202,38,.35);color:#ffca26;font-size:12px;font-weight:700;padding:5px 16px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px}
+.hero h1{color:#fff;font-size:26px;font-weight:800;margin-bottom:16px}
+.csm-pill{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.2);border-radius:30px;padding:8px 16px}
+.csm-av{width:32px;height:32px;border-radius:50%;background:#ffca26;display:flex;align-items:center;justify-content:center;font-weight:800;color:#22367b;font-size:14px}
+.csm-nm{color:#fff;font-weight:700;font-size:13px;text-align:left}
+.csm-rl{color:rgba(255,255,255,.65);font-size:11px;text-align:left}
+/* CSM selector */
+.csm-bar{background:#fff;border-bottom:1px solid #f0f2f7;padding:10px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.csm-bar-label{font-size:12px;font-weight:700;color:#6b7280;margin-right:4px}
+.csm-btn{padding:5px 14px;border-radius:20px;border:2px solid #e5e7eb;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.csm-btn.active{background:#22367b;color:#fff;border-color:#22367b}
+/* Tabs */
+.tabs{display:flex;border-bottom:3px solid #ffca26;background:#fff}
+.tab-btn{padding:11px 22px;border:none;background:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:14px;color:#6b7280;border-bottom:3px solid transparent;margin-bottom:-3px}
+.tab-btn.active{font-weight:800;color:#22367b;border-bottom:3px solid #22367b}
+/* Content */
+.wrap{max-width:780px;margin:0 auto;padding:24px 20px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card-title{font-size:15px;font-weight:800;color:#22367b;margin-bottom:14px}
+/* Sub-tabs */
+.sub-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0}
+.sub-tab{padding:8px 18px;border-radius:8px 8px 0 0;border:none;cursor:pointer;font-weight:600;font-size:13px;font-family:inherit;background:#f3f4f6;color:#6b7280}
+.sub-tab.active{background:#22367b;color:#fff;font-weight:800}
+.sub-content{background:#fff;border-radius:0 12px 12px 12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px}
+/* Form */
+.field{margin-bottom:12px}
+.field label{font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+.field input,.field select{width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+/* Buttons */
+.btn{padding:11px 22px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;font-family:inherit}
+.btn-primary{background:#22367b;color:#fff}
+.btn-primary:disabled{opacity:.4;cursor:default}
+.btn-secondary{background:#f3f4f6;color:#6b7280;border:none}
+.btn-danger{background:#fee2e2;color:#dc2626;border:none;padding:7px 12px;font-size:12px}
+.btn-green{background:#057a55;color:#fff}
+.btn-yellow{background:#ffca26;color:#22367b}
+.btn-sm{padding:7px 14px;font-size:13px}
+/* Row */
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+/* Type card */
+.type-card{border:1.5px solid #e5e7eb;border-radius:10px;padding:14px;margin-bottom:10px}
+/* Slot row */
+.slot-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+/* CSM list item */
+.csm-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;margin-bottom:8px;border:2px solid #e5e7eb;background:#fff}
+.csm-item.active-item{border-color:#22367b;background:#eff6ff}
+/* Messages */
+.msg{border-radius:8px;padding:12px 16px;font-size:13px;font-weight:600;margin-bottom:12px}
+.msg-ok{background:#ecfdf5;border:2px solid #6ee7b7;color:#057a55}
+.msg-err{background:#fde8e8;border:2px solid #f8b4b4;color:#9b1c1c}
+.msg-warn{background:#fff3cd;border:1px solid #fbbf24;color:#92400e}
+/* Loading */
+.loading-overlay{display:flex;align-items:center;justify-content:center;padding:40px;color:#6b7280;font-size:14px}
+/* Slot tabs */
+.slot-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:12px 12px 0;border-bottom:1px solid #f0f2f7}
+.slot-tab{padding:7px 14px;border-radius:6px 6px 0 0;border:none;cursor:pointer;font-size:12px;font-family:inherit;background:#f3f4f6;color:#6b7280}
+.slot-tab.active{background:#eff6ff;color:#22367b;font-weight:800}
+.slot-content{padding:20px}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="pwd-gate">
+  <div class="pwd-box">
+    <img src="https://i.imgur.com/IVPOWqc.png" alt="ClipEscola" onerror="this.style.display='none'">
+    <div class="pwd-title">Área Administrativa</div>
+    <div class="pwd-sub">Agendamentos CSM — Retaguarda</div>
+    <input type="password" id="pwd-input" class="pwd-input" placeholder="Senha de acesso">
+    <div id="pwd-err" class="pwd-errmsg hd">Senha incorreta. Tente novamente.</div>
+    <button class="btn btn-primary" style="width:100%" id="pwd-btn">Entrar</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app" class="hd">
+  <div class="hdr">
+    <img src="https://i.imgur.com/IVPOWqc.png" alt="ClipEscola" onerror="this.style.display='none'">
+    <div class="hdr-right">
+      <div class="badge">Admin</div>
+      <button class="btn-sair" id="btn-sair">Sair</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-tag">Agendamentos ClipEscola</div>
+    <h1>Painel Administrativo</h1>
+    <div class="csm-pill" id="hero-csm">
+      <div class="csm-av" id="hero-av">--</div>
+      <div><div class="csm-nm" id="hero-name">Carregando...</div><div class="csm-rl" id="hero-role">Customer Success Manager</div></div>
+    </div>
+  </div>
+
+  <div class="csm-bar">
+    <span class="csm-bar-label">CSM:</span>
+    <div id="csm-selector"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="config">⚙️ Configurações</button>
+  </div>
+
+  <div class="wrap">
+    <div id="loading-msg" class="card"><div class="loading-overlay">⏳ Carregando configuração do servidor...</div></div>
+    <div id="config-panel" class="hd">
+
+      <div class="sub-tabs" id="sub-tabs">
+        <button class="sub-tab active" data-sub="dados">👤 Dados do CSM</button>
+        <button class="sub-tab" data-sub="horarios">📅 Horários</button>
+        <button class="sub-tab" data-sub="reunioes">🎯 Tipos de Reunião</button>
+        <button class="sub-tab" data-sub="csms">👥 Gerenciar CSMs</button>
+      </div>
+
+      <!-- Dados do CSM -->
+      <div class="sub-content" id="sub-dados">
+        <div class="card-title">Dados do CSM</div>
+        <div class="field"><label>Nome completo</label><input id="f-name" type="text"></div>
+        <div class="field"><label>Cargo/Título</label><input id="f-title" type="text"></div>
+        <div class="field"><label>E-mail</label><input id="f-email" type="email"></div>
+        <div class="field"><label>Link ICS (privado)</label><input id="f-ics" type="text"></div>
+        <div class="field">
+          <label>Status</label>
+          <div style="display:flex;gap:16px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600">
+              <input type="radio" name="f-active" value="true" id="f-active-yes"> Ativo
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600">
+              <input type="radio" name="f-active" value="false" id="f-active-no"> Inativo
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-save-dados">Salvar dados</button>
+      </div>
+
+      <!-- Horários -->
+      <div class="sub-content hd" id="sub-horarios">
+        <div id="slot-tabs-wrap"></div>
+        <div id="slot-content-wrap"></div>
+      </div>
+
+      <!-- Tipos de Reunião -->
+      <div class="sub-content hd" id="sub-reunioes">
+        <div class="card-title">Tipos de Reunião</div>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:14px">Novos tipos aparecem automaticamente na aba Horários.</p>
+        <div id="mtypes-list"></div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn btn-secondary btn-sm" id="btn-add-mtype">+ Adicionar tipo</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-mtypes">Salvar</button>
+        </div>
+      </div>
+
+      <!-- Gerenciar CSMs -->
+      <div class="sub-content hd" id="sub-csms">
+        <div class="card-title">Gerenciar CSMs</div>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:14px">Novo CSM herda os tipos de reunião e horários padrão atuais.</p>
+        <div id="csms-list"></div>
+        <button class="btn btn-yellow btn-sm" id="btn-add-csm" style="margin-top:8px">+ Adicionar novo CSM</button>
+      </div>
+
+      <!-- Publicar -->
+      <div class="card">
+        <div class="card-title">🚀 Publicar configuração</div>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:16px">Salva no servidor. As páginas de agendamento carregam automaticamente — sem precisar atualizar o HTML.</p>
+        <div id="save-msg"></div>
+        <button class="btn btn-green" id="btn-save-server">💾 Salvar no servidor</button>
+
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f2f7">
+          <div style="font-size:13px;font-weight:700;color:#6b7280;margin-bottom:6px">Upload inicial (só na primeira vez)</div>
+          <p style="font-size:12px;color:#6b7280;margin-bottom:10px">Após o primeiro upload, use apenas "Salvar no servidor" para futuras alterações.</p>
+          <div id="dl-msg"></div>
+          <button class="btn btn-secondary btn-sm" id="btn-download-html">⬇ Baixar index.html do CSM selecionado</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var PASSWORD   = 'Clip@CSM2026';
+var WCFG       = 'https://n8n.clipescola.com.br/webhook/config-csm';
+var WSAVE      = 'https://n8n.clipescola.com.br/webhook/config-csm-save';
+var WV         = 'https://n8n.clipescola.com.br/webhook/verificar-csm';
+var WA         = 'https://n8n.clipescola.com.br/webhook/agendar-csm';
+var SHEET_ID   = '1rwNkmBUlOjfUHbIbHpyHiLfou8tYyJfQbZtz0dwjgwA';
+var DAYS_FULL  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+// State
+var state = {
+  csms: [
+    {id:'alini',    name:'Alini Farias',     email:'alini.clipescola@gmail.com',          title:'Customer Success Manager', icsUrl:'https://calendar.google.com/calendar/ical/alini.clipescola%40gmail.com/private-45146bbd5a547df23dfcf600d0d55e95/basic.ics',       active:true},
+    {id:'davi',     name:'Davi Morais',       email:'davimorais.clipescola@gmail.com',     title:'Customer Success Manager', icsUrl:'https://calendar.google.com/calendar/ical/davimorais.clipescola%40gmail.com/private-1ccf5f12744f25f3550b7c92bccf36b2/basic.ics',   active:true},
+    {id:'pollyanna',name:'Pollyanna Antunes', email:'pollyanna.clipescola@gmail.com',      title:'Customer Success Manager', icsUrl:'https://calendar.google.com/calendar/ical/pollyanna.clipescola%40gmail.com/private-c7bf7ec4f9695004ca802d06e635861c/basic.ics',    active:true},
+    {id:'priscilla',name:'Priscilla Souza',   email:'priscillasouza.clipescola@gmail.com', title:'Customer Success Manager', icsUrl:'https://calendar.google.com/calendar/ical/priscillasouza.clipescola%40gmail.com/private-609b0c72a956f11df087a85a6141cb41/basic.ics',active:true},
+    {id:'renan',    name:'Renan Baptistella', email:'renan.clipescola@gmail.com',          title:'Customer Success Manager', icsUrl:'https://calendar.google.com/calendar/ical/renan.clipescola%40gmail.com/private-0b24ae0debef4bc4bbc595f6e5912f23/basic.ics',       active:true}
+  ],
+  meetingTypes: [
+    {id:'mt1', label:'Reunião de Treinamento', duration:120, active:true},
+    {id:'mt2', label:'Reunião de Alinhamento',  duration:60,  active:true}
+  ],
+  slotsByCSM: {},
+  selCSM: 'alini',
+  activeSub: 'dados',
+  activeSlotType: 'mt1'
+};
+
+var defaultSlots = [
+  {day:1,time:'09:30'},{day:1,time:'14:30'},
+  {day:2,time:'09:00'},{day:2,time:'14:30'},
+  {day:3,time:'09:30'},{day:3,time:'14:30'},
+  {day:4,time:'09:00'},{day:4,time:'14:30'},
+  {day:5,time:'09:30'},{day:5,time:'14:00'}
+];
+
+function initDefaultSlots() {
+  state.csms.forEach(function(c) {
+    if (!state.slotsByCSM[c.id]) state.slotsByCSM[c.id] = {};
+    state.meetingTypes.forEach(function(mt) {
+      if (!state.slotsByCSM[c.id][mt.id]) state.slotsByCSM[c.id][mt.id] = JSON.parse(JSON.stringify(defaultSlots));
+    });
+  });
+}
+
+function fD(m){var h=Math.floor(m/60),r=m%60;return r?h+'h'+r+'min':h+' hora'+(h>1?'s':'');}
+function pad(n){return ('0'+n).slice(-2);}
+function initials(name){return name.split(' ').slice(0,2).map(function(p){return p[0];}).join('').toUpperCase();}
+function getCSM(){return state.csms.find(function(c){return c.id===state.selCSM;})||state.csms[0];}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+document.getElementById('pwd-btn').addEventListener('click', tryLogin);
+document.getElementById('pwd-input').addEventListener('keydown', function(e){if(e.key==='Enter')tryLogin();});
+document.getElementById('btn-sair').addEventListener('click', function(){
+  document.getElementById('app').classList.add('hd');
+  document.getElementById('pwd-gate').classList.remove('hd');
+  document.getElementById('pwd-input').value='';
+});
+
+function tryLogin() {
+  var val = document.getElementById('pwd-input').value;
+  if (val === PASSWORD) {
+    document.getElementById('pwd-gate').classList.add('hd');
+    document.getElementById('app').classList.remove('hd');
+    document.getElementById('pwd-err').classList.add('hd');
+    document.getElementById('pwd-input').classList.remove('err');
+    loadConfig();
+  } else {
+    document.getElementById('pwd-err').classList.remove('hd');
+    document.getElementById('pwd-input').classList.add('err');
+    document.getElementById('pwd-input').value='';
+  }
+}
+
+// ── Load config from server ───────────────────────────────────────────────────
+function loadConfig() {
+  document.getElementById('loading-msg').classList.remove('hd');
+  document.getElementById('config-panel').classList.add('hd');
+  fetch(WCFG)
+  .then(function(r){return r.json();})
+  .then(function(cfg){
+    if (cfg.csms && cfg.csms.length)            state.csms = cfg.csms;
+    if (cfg.meetingTypes && cfg.meetingTypes.length) state.meetingTypes = cfg.meetingTypes;
+    if (cfg.slotsByCSM)                         state.slotsByCSM = cfg.slotsByCSM;
+    initDefaultSlots();
+    document.getElementById('loading-msg').classList.add('hd');
+    document.getElementById('config-panel').classList.remove('hd');
+    renderAll();
+  })
+  .catch(function(){
+    initDefaultSlots();
+    document.getElementById('loading-msg').classList.add('hd');
+    document.getElementById('config-panel').classList.remove('hd');
+    renderAll();
+  });
+}
+
+// ── Save to server ────────────────────────────────────────────────────────────
+document.getElementById('btn-save-server').addEventListener('click', function() {
+  var btn = this;
+  btn.disabled = true; btn.textContent = '⏳ Salvando...';
+  var slotsByCSM = {};
+  state.csms.forEach(function(c){slotsByCSM[c.id]=state.slotsByCSM[c.id]||{};});
+  fetch(WSAVE, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({meetingTypes:state.meetingTypes, slotsByCSM:slotsByCSM, csms:state.csms})})
+  .then(function(r){return r.json();})
+  .then(function(){
+    showMsg('save-msg','✅ Configuração salva! As páginas já carregarão os dados atualizados.','ok');
+    btn.disabled=false;btn.textContent='💾 Salvar no servidor';
+  })
+  .catch(function(){
+    showMsg('save-msg','❌ Erro de conexão. Tente novamente.','err');
+    btn.disabled=false;btn.textContent='💾 Salvar no servidor';
+  });
+});
+
+// ── Download HTML ─────────────────────────────────────────────────────────────
+document.getElementById('btn-download-html').addEventListener('click', function(){
+  var csm = getCSM();
+  var html = buildHTML(csm);
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href=url; a.download='agendamento-'+csm.id+'.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  showMsg('dl-msg','✅ Download iniciado! Envie para o repositório GitHub do CSM.','ok');
+});
+
+function showMsg(id, text, type) {
+  var el = document.getElementById(id);
+  el.innerHTML = '<div class="msg msg-'+type+'">'+text+'</div>';
+  setTimeout(function(){el.innerHTML='';},5000);
+}
+
+// ── Render all ────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderCSMSelector();
+  renderHero();
+  renderSubContent();
+}
+
+function renderCSMSelector() {
+  var el = document.getElementById('csm-selector');
+  el.innerHTML = '';
+  state.csms.forEach(function(c) {
+    var btn = document.createElement('button');
+    btn.className = 'csm-btn' + (c.id===state.selCSM?' active':'');
+    btn.textContent = c.name.split(' ')[0];
+    btn.addEventListener('click', function(){state.selCSM=c.id;renderAll();});
+    el.appendChild(btn);
+  });
+}
+
+function renderHero() {
+  var csm = getCSM();
+  document.getElementById('hero-av').textContent   = initials(csm.name);
+  document.getElementById('hero-name').textContent = csm.name;
+  document.getElementById('hero-role').textContent = csm.title;
+}
+
+// ── Sub-tabs ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('.sub-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    state.activeSub = this.dataset.sub;
+    document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    renderSubContent();
+  });
+});
+
+function renderSubContent() {
+  ['dados','horarios','reunioes','csms'].forEach(function(s){
+    document.getElementById('sub-'+s).classList.add('hd');
+  });
+  document.getElementById('sub-'+state.activeSub).classList.remove('hd');
+  if (state.activeSub==='dados')    renderDados();
+  if (state.activeSub==='horarios') renderHorarios();
+  if (state.activeSub==='reunioes') renderReunioes();
+  if (state.activeSub==='csms')     renderCSMs();
+}
+
+// ── Dados ─────────────────────────────────────────────────────────────────────
+function renderDados() {
+  var csm = getCSM();
+  document.getElementById('f-name').value  = csm.name  ||'';
+  document.getElementById('f-title').value = csm.title ||'';
+  document.getElementById('f-email').value = csm.email ||'';
+  document.getElementById('f-ics').value   = csm.icsUrl||'';
+  document.getElementById('f-active-yes').checked = csm.active!==false;
+  document.getElementById('f-active-no').checked  = csm.active===false;
+}
+
+document.getElementById('btn-save-dados').addEventListener('click', function(){
+  state.csms = state.csms.map(function(c){
+    if (c.id!==state.selCSM) return c;
+    return Object.assign({},c,{
+      name:  document.getElementById('f-name').value.trim(),
+      title: document.getElementById('f-title').value.trim(),
+      email: document.getElementById('f-email').value.trim(),
+      icsUrl:document.getElementById('f-ics').value.trim(),
+      active:document.getElementById('f-active-yes').checked
+    });
+  });
+  renderHero();
+  renderCSMSelector();
+  this.textContent='✓ Salvo!';
+  var btn=this;setTimeout(function(){btn.textContent='Salvar dados';},2000);
+});
+
+// ── Horários ──────────────────────────────────────────────────────────────────
+function renderHorarios() {
+  var csm = getCSM();
+  if (!state.slotsByCSM[csm.id]) state.slotsByCSM[csm.id]={};
+  var mts = state.meetingTypes;
+  if (!mts.length){document.getElementById('sub-horarios').innerHTML='<div style="padding:20px;color:#6b7280;font-size:13px">Crie tipos de reunião primeiro.</div>';return;}
+  if (!mts.find(function(t){return t.id===state.activeSlotType;})) state.activeSlotType=mts[0].id;
+
+  // Slot tabs
+  var tabsWrap = document.getElementById('slot-tabs-wrap');
+  tabsWrap.className='slot-tabs';tabsWrap.innerHTML='';
+  mts.forEach(function(mt){
+    var b=document.createElement('button');
+    b.className='slot-tab'+(mt.id===state.activeSlotType?' active':'');
+    b.textContent=mt.label+' ('+fD(mt.duration)+')';
+    b.style.opacity=mt.active?'1':'0.55';
+    b.addEventListener('click',function(){state.activeSlotType=mt.id;renderHorarios();});
+    tabsWrap.appendChild(b);
+  });
+
+  // Slot content
+  var contentWrap = document.getElementById('slot-content-wrap');
+  contentWrap.className='slot-content';contentWrap.innerHTML='';
+  var mt = mts.find(function(t){return t.id===state.activeSlotType;});
+  if (!mt) return;
+  if (!state.slotsByCSM[csm.id][mt.id]) state.slotsByCSM[csm.id][mt.id]=JSON.parse(JSON.stringify(defaultSlots));
+  var slots = state.slotsByCSM[csm.id][mt.id];
+
+  var header=document.createElement('div');
+  header.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:14px';
+  header.innerHTML='<div style="font-size:14px;font-weight:800;color:#22367b">'+mt.label+'</div><span style="font-size:12px;color:#6b7280">Duração: '+fD(mt.duration)+'</span>';
+  contentWrap.appendChild(header);
+
+  if (!slots.length){var p=document.createElement('p');p.style.cssText='color:#6b7280;font-size:13px;margin-bottom:10px';p.textContent='Nenhum horário ainda.';contentWrap.appendChild(p);}
+
+  slots.forEach(function(sl,i){
+    var row=document.createElement('div');row.className='slot-row';
+    var sel=document.createElement('select');sel.style.cssText='flex:1 1 120px;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none';
+    [1,2,3,4,5].forEach(function(d){var o=document.createElement('option');o.value=d;o.textContent=DAYS_FULL[d];if(sl.day===d)o.selected=true;sel.appendChild(o);});
+    sel.addEventListener('change',function(){state.slotsByCSM[csm.id][mt.id][i].day=+this.value;});
+    var inp=document.createElement('input');inp.type='time';inp.value=sl.time;inp.style.cssText='flex:0 0 110px;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none';
+    var addMin=function(t,m){var p2=t.split(':'),v=+p2[0]*60+ +p2[1]+m;return pad(Math.floor(v/60))+':'+pad(v%60);};
+    inp.addEventListener('change',function(){state.slotsByCSM[csm.id][mt.id][i].time=this.value;});
+    var span=document.createElement('span');span.style.cssText='font-size:12px;color:#6b7280;white-space:nowrap';span.textContent='até '+addMin(sl.time,mt.duration);
+    var delBtn=document.createElement('button');delBtn.className='btn btn-danger';delBtn.textContent='Remover';
+    delBtn.addEventListener('click',function(){state.slotsByCSM[csm.id][mt.id].splice(i,1);renderHorarios();});
+    row.appendChild(sel);row.appendChild(inp);row.appendChild(span);row.appendChild(delBtn);
+    contentWrap.appendChild(row);
+  });
+
+  var actRow=document.createElement('div');actRow.style.cssText='display:flex;gap:10px;margin-top:10px;flex-wrap:wrap';
+  var addBtn=document.createElement('button');addBtn.className='btn btn-secondary btn-sm';addBtn.textContent='+ Horário';
+  addBtn.addEventListener('click',function(){state.slotsByCSM[csm.id][mt.id].push({day:1,time:'09:00'});renderHorarios();});
+  var saveBtn=document.createElement('button');saveBtn.className='btn btn-primary btn-sm';saveBtn.textContent='Salvar';
+  saveBtn.addEventListener('click',function(){this.textContent='✓ Salvo!';var b=this;setTimeout(function(){b.textContent='Salvar';},2000);});
+  var copyBtn=document.createElement('button');copyBtn.style.cssText='padding:7px 14px;border-radius:8px;border:1px solid #fbbf24;background:#fffbeb;color:#92400e;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit';
+  copyBtn.textContent='📋 Copiar para todos';
+  var confirmDiv=null;
+  copyBtn.addEventListener('click',function(){
+    if(confirmDiv){contentWrap.removeChild(confirmDiv);confirmDiv=null;return;}
+    confirmDiv=document.createElement('div');confirmDiv.className='msg msg-warn';confirmDiv.style.marginTop='10px';
+    confirmDiv.innerHTML='<strong>Copiar horários de '+csm.name+' para todos os CSMs?</strong>';
+    var confBtn=document.createElement('button');confBtn.className='btn btn-primary btn-sm';confBtn.style.marginTop='8px';confBtn.textContent='✓ Confirmar';
+    confBtn.addEventListener('click',function(){
+      var cur=JSON.parse(JSON.stringify(state.slotsByCSM[csm.id]));
+      state.csms.forEach(function(c){if(c.id!==csm.id){if(!state.slotsByCSM[c.id])state.slotsByCSM[c.id]={};state.slotsByCSM[c.id]=JSON.parse(JSON.stringify(cur));}});
+      contentWrap.removeChild(confirmDiv);confirmDiv=null;
+      saveBtn.textContent='✓ Copiado!';setTimeout(function(){saveBtn.textContent='Salvar';},2000);
+    });
+    var cancBtn=document.createElement('button');cancBtn.className='btn btn-secondary btn-sm';cancBtn.style.cssText='margin-top:8px;margin-left:8px';cancBtn.textContent='Cancelar';
+    cancBtn.addEventListener('click',function(){contentWrap.removeChild(confirmDiv);confirmDiv=null;});
+    confirmDiv.appendChild(document.createElement('br'));confirmDiv.appendChild(confBtn);confirmDiv.appendChild(cancBtn);
+    contentWrap.appendChild(confirmDiv);
+  });
+  actRow.appendChild(addBtn);actRow.appendChild(saveBtn);actRow.appendChild(copyBtn);
+  contentWrap.appendChild(actRow);
+}
+
+// ── Tipos de Reunião ──────────────────────────────────────────────────────────
+function renderReunioes() {
+  var el = document.getElementById('mtypes-list');
+  el.innerHTML='';
+  state.meetingTypes.forEach(function(mt,i){
+    var card=document.createElement('div');card.className='type-card';
+    var row=document.createElement('div');row.style.cssText='display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start';
+    // Name
+    var nd=document.createElement('div');nd.style.cssText='flex:1 1 160px';
+    nd.innerHTML='<label style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Nome</label>';
+    var ni=document.createElement('input');ni.value=mt.label;ni.style.cssText='width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none';
+    ni.addEventListener('input',function(){state.meetingTypes[i].label=this.value;updatePreview(i);});
+    nd.appendChild(ni);row.appendChild(nd);
+    // Duration
+    var dd=document.createElement('div');dd.style.cssText='flex:0 0 120px';
+    dd.innerHTML='<label style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Duração (min)</label>';
+    var di=document.createElement('input');di.type='number';di.min=15;di.step=15;di.value=mt.duration;di.style.cssText='width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none';
+    di.addEventListener('input',function(){state.meetingTypes[i].duration=+this.value;updatePreview(i);});
+    dd.appendChild(di);row.appendChild(dd);
+    // Active
+    var ad=document.createElement('div');ad.style.cssText='flex:0 0 60px';
+    ad.innerHTML='<label style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Ativo</label>';
+    var ai=document.createElement('input');ai.type='checkbox';ai.checked=mt.active;ai.style.cssText='width:18px;height:18px;margin-top:8px;accent-color:#22367b';
+    ai.addEventListener('change',function(){state.meetingTypes[i].active=this.checked;});
+    ad.appendChild(ai);row.appendChild(ad);
+    // Remove
+    var rd=document.createElement('div');rd.style.cssText='flex:0 0 80px;padding-top:22px';
+    var rb=document.createElement('button');rb.className='btn btn-danger';rb.textContent='Remover';
+    rb.addEventListener('click',function(){state.meetingTypes.splice(i,1);renderReunioes();});
+    rd.appendChild(rb);row.appendChild(rd);
+    card.appendChild(row);
+    // Preview
+    var prev=document.createElement('div');prev.id='prev-'+i;prev.style.cssText='margin-top:8px;font-size:12px;color:#6b7280';
+    prev.innerHTML='Preview: <strong>'+mt.label+' ('+fD(mt.duration)+')</strong>';
+    card.appendChild(prev);
+    el.appendChild(card);
+  });
+}
+
+function updatePreview(i){
+  var el=document.getElementById('prev-'+i);
+  if(el&&state.meetingTypes[i])el.innerHTML='Preview: <strong>'+state.meetingTypes[i].label+' ('+fD(state.meetingTypes[i].duration)+')</strong>';
+}
+
+document.getElementById('btn-add-mtype').addEventListener('click',function(){
+  var id='mt_'+Date.now();
+  state.meetingTypes.push({id:id,label:'Nova reunião',duration:60,active:true});
+  state.csms.forEach(function(c){if(!state.slotsByCSM[c.id])state.slotsByCSM[c.id]={};state.slotsByCSM[c.id][id]=[];});
+  renderReunioes();
+});
+
+document.getElementById('btn-save-mtypes').addEventListener('click',function(){
+  this.textContent='✓ Salvo!';var btn=this;setTimeout(function(){btn.textContent='Salvar';},2000);
+});
+
+// ── Gerenciar CSMs ────────────────────────────────────────────────────────────
+function renderCSMs(){
+  var el=document.getElementById('csms-list');el.innerHTML='';
+  state.csms.forEach(function(c){
+    var item=document.createElement('div');item.className='csm-item'+(c.id===state.selCSM?' active-item':'');
+    var info=document.createElement('div');
+    info.innerHTML='<div style="font-weight:700;font-size:14px;color:'+(c.id===state.selCSM?'#22367b':'#374151')+'">'+c.name+'</div><div style="font-size:12px;color:#6b7280;margin-top:2px">'+(c.email||'(sem e-mail)')+'</div>';
+    var acts=document.createElement('div');acts.style.cssText='display:flex;gap:8px;align-items:center';
+    var status=document.createElement('span');status.style.cssText='font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+(c.active?'#def7ec':'#fde8e8')+';color:'+(c.active?'#057a55':'#dc2626');status.textContent=c.active?'Ativo':'Inativo';
+    var editBtn=document.createElement('button');editBtn.className='btn btn-primary btn-sm';editBtn.textContent='Editar';
+    editBtn.addEventListener('click',function(){state.selCSM=c.id;state.activeSub='dados';document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.toggle('active',b.dataset.sub==='dados');});renderAll();});
+    acts.appendChild(status);acts.appendChild(editBtn);
+    if(state.csms.length>1){
+      var delBtn=document.createElement('button');delBtn.className='btn btn-danger btn-sm';delBtn.textContent='Remover';
+      delBtn.addEventListener('click',function(){
+        state.csms=state.csms.filter(function(x){return x.id!==c.id;});
+        delete state.slotsByCSM[c.id];
+        if(state.selCSM===c.id)state.selCSM=state.csms[0].id;
+        renderAll();
+      });
+      acts.appendChild(delBtn);
+    }
+    item.appendChild(info);item.appendChild(acts);el.appendChild(item);
+  });
+}
+
+document.getElementById('btn-add-csm').addEventListener('click',function(){
+  var id='csm_'+Date.now();
+  state.csms.push({id:id,name:'Novo CSM',email:'',title:'Customer Success Manager',icsUrl:'',active:true});
+  state.slotsByCSM[id]=JSON.parse(JSON.stringify(state.slotsByCSM[state.selCSM]||{}));
+  state.selCSM=id;state.activeSub='dados';
+  document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.toggle('active',b.dataset.sub==='dados');});
+  renderAll();
+});
+
+// ── Build HTML (dinâmico) ─────────────────────────────────────────────────────
+function buildHTML(csm) {
+  var av = initials(csm.name);
+  var css = [
+    "*{box-sizing:border-box;margin:0;padding:0}",
+    "body{font-family:Nunito,sans-serif;background:#f0f2f7;min-height:100vh}",
+    ".hdr{background:#22367b;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}",
+    ".hdr img{height:36px;object-fit:contain}",
+    ".badge{background:rgba(255,202,38,.15);border:1px solid rgba(255,202,38,.4);color:#ffca26;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}",
+    ".hero{background:linear-gradient(135deg,#22367b 0%,#1a2d6b 100%);padding:48px 32px 56px;text-align:center;position:relative;overflow:hidden}",
+    ".hero::before{content:'';position:absolute;width:320px;height:320px;border-radius:50%;background:rgba(255,202,38,.07);top:-80px;right:-80px}",
+    ".hero-tag{display:inline-block;background:rgba(255,202,38,.15);border:1px solid rgba(255,202,38,.35);color:#ffca26;font-size:12px;font-weight:700;padding:5px 16px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px}",
+    ".hero h1{color:#fff;font-size:28px;font-weight:800;margin-bottom:8px}",
+    ".hero p{color:rgba(255,255,255,.75);font-size:15px;max-width:480px;margin:0 auto 20px}",
+    ".hero-csm{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.2);border-radius:30px;padding:8px 16px}",
+    ".csm-av{width:32px;height:32px;border-radius:50%;background:#ffca26;display:flex;align-items:center;justify-content:center;font-weight:800;color:#22367b;font-size:14px}",
+    ".csm-name{color:#fff;font-weight:700;font-size:13px;text-align:left}.csm-role{color:rgba(255,255,255,.65);font-size:11px;text-align:left}",
+    ".wrap{max-width:700px;margin:0 auto;padding:28px 16px}",
+    ".card{background:#fff;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}",
+    ".ttl{font-size:15px;font-weight:800;color:#22367b;margin-bottom:14px}",
+    "label{font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}",
+    "input{width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;outline:none}",
+    ".btn{padding:11px 22px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;background:#22367b;color:#fff}",
+    ".btn:disabled{opacity:.4;cursor:default}",
+    ".back{padding:10px 20px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-weight:700;font-size:14px;font-family:inherit;color:#6b7280}",
+    ".tc{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:10px;margin-bottom:8px;border:2px solid #e5e7eb;cursor:pointer;user-select:none;transition:all .15s}",
+    ".tc:hover{border-color:#22367b;background:#eff6ff}.tc.sel{border-color:#22367b;background:#eff6ff}",
+    ".tc .tn{font-weight:700;font-size:14px;color:#374151}.tc.sel .tn{color:#22367b}",
+    ".tc .td{font-size:13px;color:#6b7280;white-space:nowrap;margin-left:12px}",
+    ".cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}",
+    ".cc{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:500;cursor:default;border:2px solid transparent;user-select:none}",
+    ".av{background:#f0fdf4;color:#166534;cursor:pointer;font-weight:700}.av:hover{background:#dcfce7}",
+    ".sl{background:#22367b!important;color:#fff!important;border-color:#22367b!important;font-weight:800}",
+    ".td2{background:#eff6ff;color:#22367b;border-color:#bfdbfe;font-weight:700}",
+    ".em{color:#d1d5db}",
+    ".ts{padding:9px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#f0f9ff;color:#0369a1;border:2px solid #bae6fd;font-family:inherit;user-select:none;display:inline-block;margin:4px}",
+    ".ts.sel{background:#22367b;color:#fff;border-color:#22367b}",
+    ".info{background:#eff6ff;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#22367b;font-weight:600}",
+    ".succ{background:#ecfdf5;border:2px solid #6ee7b7;border-radius:12px;padding:32px;text-align:center}",
+    ".err{color:#dc2626;font-size:13px;margin-top:10px;display:none}",
+    ".hd{display:none}.frow{display:flex;flex-direction:column;gap:12px}",
+    ".cnav{display:flex;gap:6px;align-items:center}",
+    ".cnav button{padding:5px 10px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-family:inherit;font-size:14px}",
+    ".loading{text-align:center;padding:24px 0;color:#6b7280;font-size:13px}",
+    ".tz-note{font-size:12px;color:#6b7280;margin-top:8px;display:flex;align-items:center;gap:4px}",
+    ".meet-box{margin-top:12px;background:#eff6ff;border-radius:8px;padding:10px 14px;font-size:13px}",
+    ".meet-box-title{font-weight:700;color:#22367b;margin-bottom:6px}",
+    ".meet-row{display:flex;align-items:center;gap:8px}",
+    ".meet-link{flex:1;word-break:break-all;color:#22367b;font-size:13px}",
+    ".copy-btn{flex-shrink:0;padding:6px 14px;border-radius:6px;border:1.5px solid #d3e2f2;background:#fff;color:#22367b;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}"
+  ].join('\n');
+
+  var js = [
+    "var WV='"+WV+"',WA='"+WA+"';",
+    "var WCFG='"+WCFG+"';",
+    "var CSM_ID="+JSON.stringify(csm.id)+";",
+    "var CSM_N="+JSON.stringify(csm.name)+";",
+    "var CSM_E="+JSON.stringify(csm.email)+";",
+    "var CSM_ICS="+JSON.stringify(csm.icsUrl)+";",
+    "var SHEET="+JSON.stringify(SHEET_ID)+";",
+    "var MTYPES=[],SBT={},currentFreeDays={};",
+    "var cy=new Date().getFullYear(),cm=new Date().getMonth();",
+    "var selDate='',selTime='',typeId='',typeName='',typeDur=0;",
+    "var MONTHS=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];",
+    "var DS=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];",
+    "var DL=['domingo','segunda-feira','terca-feira','quarta-feira','quinta-feira','sexta-feira','sabado'];",
+    "function fD(m){var h=Math.floor(m/60),r=m%60;return r?h+'h'+r+'min':h+' hora'+(h>1?'s':'');}",
+    "function aM(t,m){var p=t.split(':'),v=+p[0]*60+ +p[1]+m;return ('0'+Math.floor(v/60)).slice(-2)+':'+('0'+(v%60)).slice(-2);}",
+    "function pad(n){return ('0'+n).slice(-2);}",
+    "function show(id){['s1','s2','s3','succ'].forEach(function(s){document.getElementById(s).classList.add('hd')});document.getElementById(id).classList.remove('hd');}",
+    "function buildTypes(){var el=document.getElementById('type-list');if(!el)return;el.innerHTML='';if(!MTYPES.length){el.innerHTML=\"<p style='color:#6b7280;font-size:13px'>Nenhum tipo configurado.</p>\";return;}MTYPES.forEach(function(mt,i){var d=document.createElement('div');d.className='tc';d.id='tc'+i;d.innerHTML=\"<span class='tn'>\"+mt.label+\"</span><span class='td'>(\"+fD(mt.duration)+\")</span>\";d.addEventListener('click',function(){pickType(i);});el.appendChild(d);});}",
+    "function loadConfig(cb){var el=document.getElementById('type-list');if(el)el.innerHTML=\"<div class='loading'>&#9203; Carregando...</div>\";fetch(WCFG).then(function(r){return r.json();}).then(function(cfg){if(cfg.meetingTypes)MTYPES=cfg.meetingTypes.filter(function(t){return t.active;});if(cfg.slotsByCSM&&cfg.slotsByCSM[CSM_ID])SBT=cfg.slotsByCSM[CSM_ID];if(cb)cb();}).catch(function(){if(cb)cb();});}",
+    "function pickType(i){var mt=MTYPES[i];if(!mt)return;document.querySelectorAll('.tc').forEach(function(x){x.classList.remove('sel');});var el=document.getElementById('tc'+i);if(el)el.classList.add('sel');typeId=mt.id;typeDur=mt.duration;typeName=mt.label;document.getElementById('btn1').disabled=false;}",
+    "function checkAndRenderMonth(){var wrap=document.getElementById('cal-wrap');wrap.innerHTML=\"<div class='loading'>&#9203; Verificando disponibilidade do mes...</div>\";document.getElementById('tw').classList.add('hd');selDate='';selTime='';document.getElementById('btn2').disabled=true;var minDate=new Date(Date.now()+48*60*60*1000);minDate.setHours(0,0,0,0);var dim=new Date(cy,cm+1,0).getDate(),promises=[];for(var d=1;d<=dim;d++){var dt=new Date(cy,cm,d);if(dt<minDate)continue;var dow=dt.getDay();var ds=(SBT[typeId]||[]).filter(function(s){return s.day===dow;});if(!ds.length)continue;var iso=cy+'-'+pad(cm+1)+'-'+pad(d);(function(iso2,ds2){promises.push(fetch(WV,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csmEmail:CSM_E,icsUrl:CSM_ICS,date:iso2,duration:typeDur,slots:ds2,slaHours:48})}).then(function(r){return r.json();}).then(function(data){return{iso:iso2,free:(data.slots||[]).length>0};}).catch(function(){return{iso:iso2,free:true};}));})(iso,ds);}Promise.all(promises).then(function(res){var fd={};res.forEach(function(r){if(r.free)fd[r.iso]=true;});currentFreeDays=fd;renderCal(fd);});}",
+    "function renderCal(fd){currentFreeDays=fd||{};document.getElementById('cal-lbl').textContent=MONTHS[cm].charAt(0).toUpperCase()+MONTHS[cm].slice(1)+' '+cy;var first=new Date(cy,cm,1).getDay(),days=new Date(cy,cm+1,0).getDate();var today=new Date();today.setHours(0,0,0,0);var grid=document.createElement('div');grid.className='cal';['Dom','Seg','Ter','Qua','Qui','Sex','Sab'].forEach(function(d){var h=document.createElement('div');h.style.cssText='text-align:center;font-size:11px;font-weight:700;color:#6b7280;padding:4px 0';h.textContent=d;grid.appendChild(h);});for(var i=0;i<first;i++)grid.appendChild(document.createElement('div'));for(var d=1;d<=days;d++){var dt=new Date(cy,cm,d),iso=cy+'-'+pad(cm+1)+'-'+pad(d);var isT=dt.getTime()===today.getTime(),av=currentFreeDays[iso]===true,sel=iso===selDate;var cell=document.createElement('div');cell.className='cc'+(sel?' sl':isT&&!av?' td2':av?' av':' em');cell.textContent=d;if(av){(function(i2,dw){cell.addEventListener('click',function(){pickDate(i2,dw);});})(iso,dt.getDay());}grid.appendChild(cell);}var w=document.getElementById('cal-wrap');w.innerHTML='';w.appendChild(grid);}",
+    "function pickDate(iso,dow){selDate=iso;selTime='';document.getElementById('btn2').disabled=true;renderCal(currentFreeDays);document.getElementById('tw').classList.remove('hd');var dt=new Date(iso+'T12:00:00');document.getElementById('tl').textContent='Carregando horarios...';document.getElementById('times').innerHTML='';var ds=(SBT[typeId]||[]).filter(function(s){return s.day===dow;});fetch(WV,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csmEmail:CSM_E,icsUrl:CSM_ICS,date:iso,duration:typeDur,slots:ds,slaHours:48})}).then(function(r){return r.json();}).then(function(data){renderTimes((data.slots||[]).map(function(s){return s.time;}),dt);}).catch(function(){renderTimes(ds.map(function(s){return s.time;}),dt);});}",
+    "function renderTimes(free,dt){document.getElementById('tl').textContent='Horarios - '+DL[dt.getDay()]+', '+dt.getDate()+' de '+MONTHS[dt.getMonth()];var tc=document.getElementById('times');tc.innerHTML='';if(!free.length){var sp=document.createElement('span');sp.style.cssText='color:#dc2626;font-size:13px';sp.textContent='Nenhum horario disponivel. Escolha outra data.';tc.appendChild(sp);return;}free.forEach(function(t){var b=document.createElement('div');b.className='ts';b.dataset.time=t;b.innerHTML=t+\" <span style='font-size:11px;opacity:.7'>ate \"+aM(t,typeDur)+\"</span>\";b.addEventListener('click',function(){document.querySelectorAll('.ts').forEach(function(x){x.classList.remove('sel');});this.classList.add('sel');selTime=this.dataset.time;document.getElementById('btn2').disabled=false;});tc.appendChild(b);});}",
+    "function confirmar(){var s=document.getElementById('fi-school').value.trim(),c=document.getElementById('fi-contact').value.trim(),e=document.getElementById('fi-email').value.trim(),p=document.getElementById('fi-phone').value.trim(),g=document.getElementById('fi-guests').value.trim();var er=document.getElementById('ferr');if(!s||!c||!e||!p){er.style.display='block';return;}er.style.display='none';var btn=document.getElementById('btn3');btn.disabled=true;btn.textContent='Aguarde...';var payload={csm:CSM_N,csmEmail:CSM_E,icsUrl:CSM_ICS,sheetId:SHEET,date:selDate,time:selTime,endTime:aM(selTime,typeDur),meetingType:typeName,duration:typeDur,school:s,contact:c,email:e,phone:p,guests:g};fetch(WA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(r){return r.json();}).then(function(resp){show('succ');var dt=new Date(selDate+'T12:00:00');var ml=resp&&resp.meetLink,meetEl='';if(ml){meetEl=\"<div class='meet-box'><div class='meet-box-title'>Link da reuniao</div><div class='meet-row'><span class='meet-link' id='meet-url'>\"+ml+\"</span><button class='copy-btn' id='copy-btn'>Copiar</button></div></div>\";}document.getElementById('sd').innerHTML='<strong>'+typeName+'</strong> com <strong>'+CSM_N+'</strong><br>'+dt.getDate()+' de '+MONTHS[dt.getMonth()]+' de '+cy+' as '+selTime+' - '+fD(typeDur)+meetEl;var cb=document.getElementById('copy-btn');if(cb&&ml){cb.addEventListener('click',function(){navigator.clipboard.writeText(ml).then(function(){cb.textContent='Copiado!';setTimeout(function(){cb.textContent='Copiar';},2000);}).catch(function(){var el=document.getElementById('meet-url');if(el){var r=document.createRange();r.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}});});}}).catch(function(){er.textContent='Erro ao enviar. Tente novamente.';er.style.display='block';btn.disabled=false;btn.textContent='Confirmar agendamento';});}",
+    "document.addEventListener('DOMContentLoaded',function(){",
+    "  loadConfig(function(){buildTypes();});",
+    "  document.getElementById('btn1').addEventListener('click',function(){if(!this.disabled){show('s2');checkAndRenderMonth();}});",
+    "  document.getElementById('btn2').addEventListener('click',function(){if(!this.disabled){show('s3');var dt=new Date(selDate+'T12:00:00');document.getElementById('ibar').textContent='Data: '+DL[dt.getDay()]+', '+dt.getDate()+' de '+MONTHS[dt.getMonth()]+' de '+dt.getFullYear()+' as '+selTime+' - '+typeName+' - '+fD(typeDur)+' - com '+CSM_N;}});",
+    "  document.getElementById('btn3').addEventListener('click',confirmar);",
+    "  document.getElementById('back2').addEventListener('click',function(){show('s1');});",
+    "  document.getElementById('back3').addEventListener('click',function(){show('s2');checkAndRenderMonth();});",
+    "  document.getElementById('prev-m').addEventListener('click',function(){cm--;if(cm<0){cm=11;cy--;}checkAndRenderMonth();});",
+    "  document.getElementById('next-m').addEventListener('click',function(){cm++;if(cm>11){cm=0;cy++;}checkAndRenderMonth();});",
+    "  document.getElementById('succ-btn').addEventListener('click',function(){location.href=location.pathname;});",
+    "});"
+  ].join('\n');
+
+  return [
+    '<!DOCTYPE html>',
+    '<html lang="pt-BR">',
+    '<head>',
+    '<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
+    '<title>Agendar Reuniao - '+csm.name+'</title>',
+    '<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">',
+    '<style>'+css+'</style>',
+    '</head>',
+    '<body>',
+    '<div class="hdr"><img src="https://i.imgur.com/IVPOWqc.png" alt="ClipEscola" onerror="this.style.display=\'none\'"><div class="badge">Agendamento</div></div>',
+    '<div class="hero"><div class="hero-tag">Agendamentos ClipEscola</div><h1>Agendar com '+csm.name+'</h1><p>Escolha o melhor horario para a sua reuniao.</p><div class="hero-csm"><div class="csm-av">'+av+'</div><div><div class="csm-name">'+csm.name+'</div><div class="csm-role">'+csm.title+'</div></div></div></div>',
+    '<div class="wrap">',
+    '  <div id="s1" class="card"><div class="ttl">Qual tipo de reuniao deseja agendar?</div><div id="type-list"></div><button class="btn" id="btn1" disabled style="margin-top:8px">Proximo</button></div>',
+    '  <div id="s2" class="card hd"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div class="ttl" style="margin:0">Escolha a data e horario</div><div class="cnav"><button id="prev-m">&#8249;</button><span id="cal-lbl" style="font-size:13px;font-weight:700;min-width:110px;text-align:center"></span><button id="next-m">&#8250;</button></div></div><div id="cal-wrap"></div><div class="tz-note">&#128336; Todos os horarios estao no fuso de Sao Paulo (GMT-3)</div><div id="tw" class="hd" style="margin-top:16px"><div id="tl" style="font-size:13px;font-weight:700;color:#6b7280;margin-bottom:8px"></div><div id="times" style="display:flex;flex-wrap:wrap;gap:4px"></div></div><div style="display:flex;gap:10px;margin-top:16px"><button class="back" id="back2">&#8592; Voltar</button><button class="btn" id="btn2" disabled>Proximo</button></div></div>',
+    '  <div id="s3" class="card hd"><div class="ttl">Preencha seus dados</div><div class="info" id="ibar"></div><div class="frow"><div><label>Nome da Escola *</label><input id="fi-school" placeholder="Ex: Colegio Sao Paulo"></div><div><label>Nome do Responsavel *</label><input id="fi-contact" placeholder="Ex: Joao Silva"></div><div><label>E-mail *</label><input id="fi-email" type="email" placeholder="joao@escola.com.br"></div><div><label>Telefone/WhatsApp *</label><input id="fi-phone" placeholder="(11) 99999-0000"></div><div><label>Outros participantes (opcional)</label><input id="fi-guests" placeholder="e-mails separados por virgula"></div></div><div id="ferr" class="err">Preencha todos os campos obrigatorios.</div><div style="display:flex;gap:10px;margin-top:16px"><button class="back" id="back3">&#8592; Voltar</button><button class="btn" id="btn3">Confirmar agendamento</button></div></div>',
+    '  <div id="succ" class="succ hd"><div style="font-size:44px;margin-bottom:10px">&#9989;</div><div style="font-size:18px;font-weight:800;color:#057a55;margin-bottom:6px">Reuniao agendada com sucesso!</div><div id="sd" style="color:#6b7280;font-size:14px"></div><p style="margin-top:6px;color:#6b7280;font-size:13px">Voce recebera um convite no e-mail em breve.</p><button class="btn" style="margin-top:16px" id="succ-btn">Novo agendamento</button></div>',
+    '</div>',
+    '<script>'+js+'<\/script>',
+    '</body>',
+    '</html>'
+  ].join('\n');
+}
+</script>
+</body>
+</html>
