@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Nunito,sans-serif;background:#f0f2f7;min-height:100vh}
-.hd{display:none}
+.hd{display:none!important}
 /* Header */
 .hdr{background:#22367b;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
 .hdr img{height:36px;object-fit:contain}
@@ -85,6 +85,16 @@ body{font-family:Nunito,sans-serif;background:#f0f2f7;min-height:100vh}
 .slot-tab{padding:7px 14px;border-radius:6px 6px 0 0;border:none;cursor:pointer;font-size:12px;font-family:inherit;background:#f3f4f6;color:#6b7280}
 .slot-tab.active{background:#eff6ff;color:#22367b;font-weight:800}
 .slot-content{padding:20px}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#fff;border-radius:16px;padding:32px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-title{font-size:18px;font-weight:800;color:#22367b;margin-bottom:4px}
+.modal-sub{font-size:13px;color:#6b7280;margin-bottom:20px}
+.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.modal-section{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f0f2f7}
+.modal-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.modal-section-title{font-size:12px;font-weight:800;color:#22367b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.preview-slug{background:#eff6ff;border-radius:8px;padding:10px 14px;font-size:12px;color:#22367b;font-weight:600;margin-top:8px;word-break:break-all}
 </style>
 </head>
 <body>
@@ -203,6 +213,60 @@ body{font-family:Nunito,sans-serif;background:#f0f2f7;min-height:100vh}
 
     </div>
   </div>
+<!-- Modal: Adicionar novo CSM -->
+<div id="modal-novo-csm" class="modal-overlay hd">
+  <div class="modal-box">
+    <div class="modal-title">➕ Adicionar novo CSM</div>
+    <div class="modal-sub">Configure todos os dados antes de adicionar. As configurações de horários e tipos de reunião serão copiadas do CSM selecionado atualmente.</div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">👤 Dados pessoais</div>
+      <div class="field"><label>Nome completo *</label><input id="nc-name" type="text" placeholder="Ex: Ana Souza"></div>
+      <div class="field"><label>Cargo / Título</label><input id="nc-title" type="text" value="Customer Success Manager"></div>
+      <div class="field"><label>E-mail *</label><input id="nc-email" type="email" placeholder="ana.clipescola@gmail.com"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">📅 Calendário</div>
+      <div class="field"><label>Link ICS (privado do Google Calendar)</label><input id="nc-ics" type="text" placeholder="https://calendar.google.com/calendar/ical/..."></div>
+      <p style="font-size:11px;color:#6b7280;margin-top:4px">Encontre em: Google Calendar → ⚙️ Configurações → seu calendário → Endereço secreto no formato iCal</p>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">🔗 Identificador (slug)</div>
+      <div class="field"><label>Slug da URL</label><input id="nc-slug" type="text" placeholder="ana" style="text-transform:lowercase"></div>
+      <p style="font-size:11px;color:#6b7280;margin-top:4px">Apenas letras minúsculas e hífens. Será usado na URL do repositório GitHub.</p>
+      <div id="nc-slug-preview" class="preview-slug" style="display:none"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">⚙️ Configurações iniciais</div>
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:13px;color:#374151">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:16px">✅</span>
+          <span><strong>Horários:</strong> copiados do CSM selecionado (<span id="nc-ref-csm"></span>)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:16px">✅</span>
+          <span><strong>Tipos de reunião:</strong> os mesmos configurados globalmente</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">✅</span>
+          <span><strong>Status:</strong> Ativo imediatamente</span>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#6b7280;margin-top:8px">💡 Após adicionar, acesse a aba <strong>Horários</strong> para ajustar os slots individualmente para este CSM.</p>
+    </div>
+
+    <div id="nc-err" class="msg msg-err" style="display:none"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="nc-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="nc-confirm" style="background:#057a55">✅ Adicionar CSM</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -575,15 +639,94 @@ function renderCSMs(){
 }
 
 document.getElementById('btn-add-csm').addEventListener('click',function(){
-  var id='csm_'+Date.now();
-  state.csms.push({id:id,name:'Novo CSM',email:'',title:'Customer Success Manager',icsUrl:'',active:true});
-  state.slotsByCSM[id]=JSON.parse(JSON.stringify(state.slotsByCSM[state.selCSM]||{}));
-  state.selCSM=id;state.activeSub='dados';
-  document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.toggle('active',b.dataset.sub==='dados');});
-  renderAll();
+  // Populate modal with current reference CSM name
+  var refCsm = getCSM();
+  document.getElementById('nc-ref-csm').textContent = refCsm.name;
+  // Clear fields
+  document.getElementById('nc-name').value  = '';
+  document.getElementById('nc-title').value = 'Customer Success Manager';
+  document.getElementById('nc-email').value = '';
+  document.getElementById('nc-ics').value   = '';
+  document.getElementById('nc-slug').value  = '';
+  document.getElementById('nc-slug-preview').style.display='none';
+  document.getElementById('nc-err').style.display='none';
+  // Open modal
+  document.getElementById('modal-novo-csm').classList.remove('hd');
 });
 
-// ── Build HTML (dinâmico) ─────────────────────────────────────────────────────
+// Slug auto-generate from name
+document.getElementById('nc-name').addEventListener('input',function(){
+  var slug = this.value.trim()
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-|-$/g,'');
+  var slugEl = document.getElementById('nc-slug');
+  if (!slugEl._manuallyEdited) {
+    slugEl.value = slug;
+    updateSlugPreview(slug);
+  }
+});
+
+document.getElementById('nc-slug').addEventListener('input',function(){
+  this._manuallyEdited = true;
+  var slug = this.value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+  this.value = slug;
+  updateSlugPreview(slug);
+});
+
+function updateSlugPreview(slug){
+  var el = document.getElementById('nc-slug-preview');
+  if(slug){
+    el.style.display='block';
+    el.textContent='🔗 URL: https://clipescola-gp.github.io/agendamentos-'+slug+'/';
+  } else {
+    el.style.display='none';
+  }
+}
+
+document.getElementById('nc-cancel').addEventListener('click',function(){
+  document.getElementById('modal-novo-csm').classList.add('hd');
+});
+
+document.getElementById('nc-confirm').addEventListener('click',function(){
+  var name  = document.getElementById('nc-name').value.trim();
+  var title = document.getElementById('nc-title').value.trim()||'Customer Success Manager';
+  var email = document.getElementById('nc-email').value.trim();
+  var ics   = document.getElementById('nc-ics').value.trim();
+  var slug  = document.getElementById('nc-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+  var errEl = document.getElementById('nc-err');
+
+  if(!name){errEl.textContent='Nome obrigatório.';errEl.style.display='block';return;}
+  if(!email||!email.includes('@')){errEl.textContent='E-mail válido obrigatório.';errEl.style.display='block';return;}
+  if(!slug){errEl.textContent='Slug obrigatório (usado na URL).';errEl.style.display='block';return;}
+  if(state.csms.find(function(c){return c.id===slug;})){errEl.textContent='Já existe um CSM com esse slug. Escolha outro.';errEl.style.display='block';return;}
+  if(state.csms.find(function(c){return c.email===email;})){errEl.textContent='Já existe um CSM com esse e-mail.';errEl.style.display='block';return;}
+
+  errEl.style.display='none';
+
+  // Add new CSM
+  state.csms.push({id:slug, name:name, email:email, title:title, icsUrl:ics, active:true});
+  // Copy slots from current selected CSM (full deep copy)
+  state.slotsByCSM[slug] = JSON.parse(JSON.stringify(state.slotsByCSM[state.selCSM]||{}));
+  // Init any missing meeting type slots with defaults
+  state.meetingTypes.forEach(function(mt){
+    if(!state.slotsByCSM[slug][mt.id]) state.slotsByCSM[slug][mt.id]=JSON.parse(JSON.stringify(defaultSlots));
+  });
+
+  // Navigate to the new CSM's dados tab
+  state.selCSM = slug;
+  state.activeSub = 'dados';
+  document.querySelectorAll('.sub-tab').forEach(function(b){b.classList.toggle('active',b.dataset.sub==='dados');});
+  document.getElementById('modal-novo-csm').classList.add('hd');
+  renderAll();
+  showMsg('save-msg','✅ CSM "'+name+'" adicionado! Verifique os dados e clique em "Salvar no servidor".','ok');
+});
+
+// Close modal on overlay click
+document.getElementById('modal-novo-csm').addEventListener('click',function(e){
+  if(e.target===this) this.classList.add('hd');
+});
 function buildHTML(csm) {
   var av = initials(csm.name);
   var css = [
